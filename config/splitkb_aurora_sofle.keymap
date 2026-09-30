@@ -2,6 +2,16 @@
  * Copyright (c) 2023 The ZMK Contributors
  *
  * SPDX-License-Identifier: MIT
+ *
+ * splitkb.com Aurora Sofle - 7 layers: a QWERTY base plus 6 toggle layers.
+ *
+ * Reaching the toggle layers:
+ *   - Hold the left inner thumb (&mo SEL) to momentarily open the SEL layer.
+ *   - On SEL, the number row is &tog SEL .. &tog L6 - tap one to toggle that
+ *     layer on; it stays active until toggled off again.
+ *   - Every non-base layer has &to BASE on its top-left key to jump home.
+ *
+ * Layers 2-6 are placeholders (&trans) - fill them in as needed.
  */
 
 #include <behaviors.dtsi>
@@ -10,7 +20,15 @@
 #include <dt-bindings/zmk/ext_power.h>
 #include <dt-bindings/zmk/rgb.h>
 
-/* Uncomment this block if using RGB */
+#define BASE 0
+#define SEL  1
+#define L2   2
+#define L3   3
+#define L4   4
+#define L5   5
+#define L6   6
+
+/* Underglow LED chain length (per-key LEDs only). */
 &led_strip {
     // chain-length = <6>;
     // chain-length = <35>; // Uncomment if using both per-key and underglow LEDs
@@ -21,73 +39,102 @@
     keymap {
         compatible = "zmk,keymap";
 
-        default_layer {
-         display-name = "BAS";
+        base_layer {
+            display-name = "BASE";
 // ------------------------------------------------------------------------------------------------------------
 // |  ESC  |  1  |  2  |  3   |  4   |  5   |                   |  6   |  7    |  8    |  9   |   0   |   `   |
 // |  TAB  |  Q  |  W  |  E   |  R   |  T   |                   |  Y   |  U    |  I    |  O   |   P   |   -   |
 // |  CTRL |  A  |  S  |  D   |  F   |  G   |                   |  H   |  J    |  K    |  L   |   ;   |   '   |
 // | SHIFT |  Z  |  X  |  C   |  V   |  B   |   "["  |  |  "]"  |  N   |  M    |  ,    |  .   |   /   | SHIFT |
-//               |CTRL | ALT  | GUI  | LOWER|  SPACE |  | ENTER | RAISE| BSPC  | GUI   | RALT |
+//               |CTRL | ALT  | GUI  | SEL  |  SPACE |  | ENTER | L2   | BSPC  | GUI   | RALT |
             bindings = <
-&kp ESC   &kp N1 &kp N2    &kp N3   &kp N4   &kp N5                     &kp N6 &kp N7   &kp N8    &kp N9   &kp N0   &kp GRAVE
-&kp TAB   &kp Q  &kp W     &kp E    &kp R    &kp T                      &kp Y  &kp U    &kp I     &kp O    &kp P    &kp MINUS
-&kp LCTRL &kp A  &kp S     &kp D    &kp F    &kp G                      &kp H  &kp J    &kp K     &kp L    &kp SEMI &kp SQT
-&kp LSHFT &kp Z  &kp X     &kp C    &kp V    &kp B  &kp LBKT   &kp RBKT &kp N  &kp M    &kp COMMA &kp DOT  &kp FSLH &kp RSHFT
-                 &kp LCTRL &kp LALT &kp LGUI &mo 1  &kp SPACE  &kp RET  &mo 2  &kp BSPC &kp RGUI  &kp RALT
+&kp ESC   &kp N1 &kp N2    &kp N3   &kp N4   &kp N5                      &kp N6 &kp N7   &kp N8    &kp N9   &kp N0   &kp GRAVE
+&kp TAB   &kp Q  &kp W     &kp E    &kp R    &kp T                       &kp Y  &kp U    &kp I     &kp O    &kp P    &kp MINUS
+&kp LCTRL &kp A  &kp S     &kp D    &kp F    &kp G                       &kp H  &kp J    &kp K     &kp L    &kp SEMI &kp SQT
+&kp LSHFT &kp Z  &kp X     &kp C    &kp V    &kp B  &kp LBKT    &kp RBKT &kp N  &kp M    &kp COMMA &kp DOT  &kp FSLH &kp RSHFT
+                 &kp LCTRL &kp LALT &kp LGUI &mo SEL &kp SPACE  &kp RET  &mo L2 &kp BSPC &kp RGUI  &kp RALT
             >;
 
-            sensor-bindings = <&inc_dec_kp C_VOL_UP C_VOL_DN>;
+            sensor-bindings = <&inc_dec_kp C_VOL_UP C_VOL_DN &inc_dec_kp C_VOL_UP C_VOL_DN>;
         };
 
-        lower_layer {
-            display-name = "LOW";
-// ------------------------------------------------------------------------------------------------------------
-// | BTCLR | BT1 | BT2 |  BT3 |  BT4 |  BT5 |                   |      |       |       |      |       |       |
-// |  F1   |  F2 |  F3 |  F4  |  F5  |  F6  |                   |  F7  |  F8   |  F9   |  F10 |  F11  |  F12  |
-// |   `   |  !  |  @  |  #   |  $   |  %   |                   |  ^   |  &    |  *    |  (   |   )   |   ~   |
-// |       |     |     |      |      |      |        |  |       |      |  _    |  +    |  {   |   }   |  "|"  |
-//               |     |      |      |      |        |  |       |      |       |       |      |
+        sel_layer {
+            display-name = "SEL";
+// Number row toggles a layer on/off. Home row = BT profiles. F-keys + RGB too.
             bindings = <
-&bt BT_CLR &bt BT_SEL 0     &bt BT_SEL 1      &bt BT_SEL 2      &bt BT_SEL 3 &bt BT_SEL 4                 &trans    &trans    &trans    &trans    &trans    &trans
-&kp F1     &kp F2           &kp F3            &kp F4            &kp F5       &kp F6                       &kp F7    &kp F8    &kp F9    &kp F10   &kp F11   &kp F12
-&kp GRAVE  &kp EXCL         &kp AT            &kp HASH          &kp DOLLAR   &kp PRCNT                    &kp CARET &kp AMPS  &kp STAR  &kp LPAR  &kp RPAR  &kp TILDE
-&trans     &ext_power EP_ON &ext_power EP_OFF &ext_power EP_TOG &trans       &trans    &trans   &trans    &trans    &kp MINUS &kp PLUS  &kp LBRC  &kp RBRC  &kp PIPE
-                            &trans            &trans            &trans       &trans    &trans   &trans    &trans    &trans    &trans    &trans
+&to BASE   &tog SEL     &tog L2      &tog L3      &tog L4      &tog L5                          &tog L6 &trans   &trans   &trans   &trans   &trans
+&trans     &kp F1       &kp F2       &kp F3       &kp F4       &kp F5                           &kp F6  &kp F7   &kp F8   &kp F9   &kp F10  &kp F11
+&bt BT_CLR &bt BT_SEL 0 &bt BT_SEL 1 &bt BT_SEL 2 &bt BT_SEL 3 &bt BT_SEL 4                     &trans  &trans   &trans   &trans   &trans   &kp F12
+&trans     &rgb_ug RGB_TOG &rgb_ug RGB_EFF &rgb_ug RGB_BRI &rgb_ug RGB_BRD &trans &trans &trans  &trans  &trans   &trans   &trans   &trans   &trans
+                        &trans       &trans       &trans       &trans     &trans &trans  &trans  &trans   &trans   &trans
             >;
 
-            sensor-bindings = <&inc_dec_kp C_VOL_UP C_VOL_DN>;
+            sensor-bindings = <&inc_dec_kp C_VOL_UP C_VOL_DN &inc_dec_kp C_VOL_UP C_VOL_DN>;
         };
 
-        raise_layer {
-            display-name = "RAI";
-// ------------------------------------------------------------------------------------------------------------
-// |       |     |     |      |      |      |                   |      |       |       |      |       |       |
-// |   `   |  1  |  2  |  3   |  4   |  5   |                   |  6   |   7   |   8   |  9   |   0   |       |
-// |   F1  |  F2 |  F3 |  F4  |  F5  |  F6  |                   |      |   <-  |   v   |  ^   |  ->   |       |
-// |   F7  |  F8 |  F9 |  F10 |  F11 |  F12 |        |  |       |  +   |   -   |   =   |  [   |   ]   |   \   |
-//               |     |      |      |      |        |  |       |      |       |       |      |
+        l2_layer {
+            display-name = "L2";
             bindings = <
-&trans    &trans &trans &trans  &trans  &trans                       &trans      &trans    &trans    &trans   &trans    &trans
-&kp GRAVE &kp N1 &kp N2 &kp N3  &kp N4  &kp N5                       &kp N6      &kp N7    &kp N8    &kp N9   &kp N0    &trans
-&kp F1    &kp F2 &kp F3 &kp F4  &kp F5  &kp F6                       &trans      &kp LEFT  &kp DOWN  &kp UP   &kp RIGHT &trans
-&kp F7    &kp F8 &kp F9 &kp F10 &kp F11 &kp F12   &trans   &trans    &kp KP_PLUS &kp MINUS &kp EQUAL &kp LBKT &kp RBKT  &kp BSLH
-                 &trans &trans  &trans  &trans    &trans   &trans    &trans      &trans    &trans    &trans
+&to BASE &trans &trans &trans &trans &trans                 &trans &trans &trans &trans &trans &trans
+&trans   &trans &trans &trans &trans &trans                 &trans &trans &trans &trans &trans &trans
+&trans   &trans &trans &trans &trans &trans                 &trans &trans &trans &trans &trans &trans
+&trans   &trans &trans &trans &trans &trans &trans   &trans &trans &trans &trans &trans &trans &trans
+                &trans &trans &trans &trans &trans   &trans &trans &trans &trans &trans
             >;
 
-            sensor-bindings = <&inc_dec_kp C_VOL_UP C_VOL_DN>;
+            sensor-bindings = <&inc_dec_kp C_VOL_UP C_VOL_DN &inc_dec_kp C_VOL_UP C_VOL_DN>;
         };
 
-        extra_1 {
-            status = "reserved";
+        l3_layer {
+            display-name = "L3";
+            bindings = <
+&to BASE &trans &trans &trans &trans &trans                 &trans &trans &trans &trans &trans &trans
+&trans   &trans &trans &trans &trans &trans                 &trans &trans &trans &trans &trans &trans
+&trans   &trans &trans &trans &trans &trans                 &trans &trans &trans &trans &trans &trans
+&trans   &trans &trans &trans &trans &trans &trans   &trans &trans &trans &trans &trans &trans &trans
+                &trans &trans &trans &trans &trans   &trans &trans &trans &trans &trans
+            >;
+
+            sensor-bindings = <&inc_dec_kp C_VOL_UP C_VOL_DN &inc_dec_kp C_VOL_UP C_VOL_DN>;
         };
 
-        extra_2 {
-            status = "reserved";
+        l4_layer {
+            display-name = "L4";
+            bindings = <
+&to BASE &trans &trans &trans &trans &trans                 &trans &trans &trans &trans &trans &trans
+&trans   &trans &trans &trans &trans &trans                 &trans &trans &trans &trans &trans &trans
+&trans   &trans &trans &trans &trans &trans                 &trans &trans &trans &trans &trans &trans
+&trans   &trans &trans &trans &trans &trans &trans   &trans &trans &trans &trans &trans &trans &trans
+                &trans &trans &trans &trans &trans   &trans &trans &trans &trans &trans
+            >;
+
+            sensor-bindings = <&inc_dec_kp C_VOL_UP C_VOL_DN &inc_dec_kp C_VOL_UP C_VOL_DN>;
         };
 
-        extra_3 {
-            status = "reserved";
+        l5_layer {
+            display-name = "L5";
+            bindings = <
+&to BASE &trans &trans &trans &trans &trans                 &trans &trans &trans &trans &trans &trans
+&trans   &trans &trans &trans &trans &trans                 &trans &trans &trans &trans &trans &trans
+&trans   &trans &trans &trans &trans &trans                 &trans &trans &trans &trans &trans &trans
+&trans   &trans &trans &trans &trans &trans &trans   &trans &trans &trans &trans &trans &trans &trans
+                &trans &trans &trans &trans &trans   &trans &trans &trans &trans &trans
+            >;
+
+            sensor-bindings = <&inc_dec_kp C_VOL_UP C_VOL_DN &inc_dec_kp C_VOL_UP C_VOL_DN>;
+        };
+
+        l6_layer {
+            display-name = "L6";
+            bindings = <
+&to BASE &trans &trans &trans &trans &trans                 &trans &trans &trans &trans &trans &trans
+&trans   &trans &trans &trans &trans &trans                 &trans &trans &trans &trans &trans &trans
+&trans   &trans &trans &trans &trans &trans                 &trans &trans &trans &trans &trans &trans
+&trans   &trans &trans &trans &trans &trans &trans   &trans &trans &trans &trans &trans &trans &trans
+                &trans &trans &trans &trans &trans   &trans &trans &trans &trans &trans
+            >;
+
+            sensor-bindings = <&inc_dec_kp C_VOL_UP C_VOL_DN &inc_dec_kp C_VOL_UP C_VOL_DN>;
         };
     };
 };
