@@ -10,8 +10,5 @@ config SHIELD_SPLITKB_AURORA_SOFLE_RIGHT
 config SHIELD_SPLITKB_AURORA_SOFLE_LEFT_PERIPHERAL
     def_bool $(shields_list_contains,splitkb_aurora_sofle_left_peripheral)
 
-config SHIELD_SPLITKB_AURORA_SOFLE_DONGLE_XIAO
-    def_bool $(shields_list_contains,splitkb_aurora_sofle_dongle_xiao)
-
 config SHIELD_SPLITKB_AURORA_SOFLE_DONGLE_PRO_MICRO
     def_bool $(shields_list_contains,splitkb_aurora_sofle_dongle_pro_micro)
