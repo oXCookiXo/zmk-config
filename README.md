@@ -2,6 +2,9 @@
 
 ZMK firmware for a splitkb.com Aurora Sofle v2 running in a dongle setup.
 
+New here or making manual edits? See [GUIDE.md](GUIDE.md) for what every file
+does and step-by-step recipes for common changes.
+
 ## Hardware
 
 - **Dongle**: nice!nano v2, BLE central, 128x64 OLED

@@ -35,3 +35,81 @@
             ;
     };
 };
+
+/*
+ * ============================================================================
+ * Cirque Pinnacle trackpad  (OPTIONAL - fully commented out until wired up)
+ * ----------------------------------------------------------------------------
+ * This template assumes the trackpad is mounted on the LEFT half. If yours is
+ * on the RIGHT, move this whole block into splitkb_aurora_sofle_right.overlay.
+ *
+ * To turn it on you must uncomment THREE things together:
+ *   1. this block
+ *   2. the cirque-input-module entry in config/west.yml
+ *   3. the CONFIG_ZMK_POINTING block in config/splitkb_aurora_sofle.conf
+ *
+ * Driver: https://github.com/petejohanson/cirque-input-module
+ * Docs:   https://zmk.dev/docs/development/hardware-integration/pointing
+ *
+ * Choose ONE wiring below (I2C or SPI). Replace every placeholder pin - shown
+ * as `pro_micro N` / `NRF_PSEL(... , X)` - with the actual GPIO you solder to.
+ * The Aurora Sofle already runs the OLED on I2C, so Option A adds the fewest
+ * wires (just the data-ready pad); the trackpad and OLED share the bus.
+ * ============================================================================
+
+// ---- Option A: I2C (recommended - reuses the existing OLED I2C bus) ----
+&pro_micro_i2c {
+    status = "okay";
+
+    trackpad: trackpad@2a {
+        compatible = "cirque,pinnacle";
+        reg = <0x2a>;                                 // Cirque Pinnacle default I2C address
+        dr-gpios = <&pro_micro N (GPIO_ACTIVE_HIGH)>;  // TODO: set the data-ready (DR) pad
+        sensitivity = "2x";                           // 1x | 2x | 3x | 4x
+        // rotate-90;
+        // x-invert;
+        // y-invert;
+        // no-taps;                                   // disable tap-to-click (use if you add real buttons)
+        // sleep;                                     // let the pad sleep to save battery
+        status = "okay";
+    };
+};
+
+// ---- Option B: SPI (use INSTEAD of Option A; needs SCK/MOSI/MISO/CS + DR) ----
+// &pinctrl {
+//     spi_trackpad_default: spi_trackpad_default {
+//         group1 {
+//             psels = <NRF_PSEL(SPIM_SCK, 0, X)>,
+//                     <NRF_PSEL(SPIM_MOSI, 0, Y)>,
+//                     <NRF_PSEL(SPIM_MISO, 0, Z)>;
+//         };
+//     };
+// };
+//
+// &spi0 {
+//     status = "okay";
+//     compatible = "nordic,nrf-spim";
+//     pinctrl-0 = <&spi_trackpad_default>;
+//     pinctrl-names = "default";
+//     cs-gpios = <&pro_micro N GPIO_ACTIVE_LOW>;
+//
+//     trackpad: trackpad@0 {
+//         compatible = "cirque,pinnacle";
+//         reg = <0>;
+//         spi-max-frequency = <1000000>;
+//         dr-gpios = <&pro_micro M (GPIO_ACTIVE_HIGH)>;
+//         sensitivity = "2x";
+//         status = "okay";
+//     };
+// };
+
+// ---- Input listener (required for either option) ----
+/ {
+    trackpad_listener: trackpad_listener {
+        compatible = "zmk,input-listener";
+        device = <&trackpad>;
+        // Optional pointer scaling / drag-scroll processors are added here;
+        // see the ZMK pointing docs linked above for the processor names.
+    };
+};
+*/
