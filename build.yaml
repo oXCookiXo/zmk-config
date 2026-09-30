@@ -9,7 +9,7 @@ include:
   # Dongle / central - nice_nano_v2 + 128x64 OLED
   - board: nice_nano_v2
     shield: splitkb_aurora_sofle_dongle_pro_micro dongle_display
-    cmake-args: -DCONFIG_ZMK_KEYBOARD_NAME=\"Aurora Dongle\" -DCONFIG_ZMK_STUDIO=y
+    cmake-args: -DCONFIG_ZMK_KEYBOARD_NAME=\"AuroraDongle\" -DCONFIG_ZMK_STUDIO=y
     artifact-name: aurora_sofle_dongle
     snippet: studio-rpc-usb-uart
 

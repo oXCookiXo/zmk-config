@@ -65,9 +65,10 @@ central and both halves are peripherals. That is why the left uses the
 `Kconfig.defconfig` (see below), not here.
 
 ### Common build.yaml edits
-- **Rename a device as it shows over Bluetooth:** change the `\"Aurora Dongle\"`
+- **Rename a device as it shows over Bluetooth:** change the `\"AuroraDongle\"`
   string. Only the central (dongle) advertises a name, so that is the only one
-  that needs it.
+  that needs it. Do not put spaces in the name; the workflow splits the
+  argument on whitespace and the build fails.
 - **Turn on USB debug logging** for a target: add `-DCONFIG_ZMK_USB_LOGGING=y` to
   its `cmake-args` (temporary; remove when done).
 
