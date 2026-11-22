@@ -1,7 +1,8 @@
 # Guide: how this config works and how to change it
 
 A walkthrough of every file in this repo, what it controls, and how to make the
-common edits yourself. Aimed at the splitkb.com Aurora Sofle dongle setup here.
+common edits yourself. Aimed at the splitkb.com Aurora Sofle running as two
+halves, with a dongle setup staged for later.
 
 ## How a ZMK build actually works
 
@@ -17,7 +18,7 @@ You do not compile firmware locally. GitHub Actions does it. The flow:
 
 Key idea: a **board** is the microcontroller (here always `nice_nano_v2`). A
 **shield** is the PCB/keyboard the controller plugs into (here the Aurora Sofle
-halves and dongle). One build = one board + one or more shields.
+halves, plus the dongle later). One build = one board + one or more shields.
 
 ## File map
 
@@ -44,9 +45,8 @@ Each `- board: ... shield: ...` block is one firmware. Ours:
 
 | Block | What it produces | Flash to |
 | --- | --- | --- |
-| `splitkb_aurora_sofle_dongle_pro_micro dongle_display` | Central + 128x64 screen | dongle |
-| `splitkb_aurora_sofle_left_peripheral` | Left half firmware | left half |
-| `splitkb_aurora_sofle_right` | Right half firmware | right half |
+| `splitkb_aurora_sofle_left` | Left half firmware (central) | left half |
+| `splitkb_aurora_sofle_right` | Right half firmware (peripheral) | right half |
 | `settings_reset` | Wipes stored BLE bonds | either half when re-pairing |
 
 Fields per block:
@@ -59,15 +59,22 @@ Fields per block:
 - `snippet`: a reusable config bundle. `studio-rpc-usb-uart` is required for
   ZMK Studio over USB.
 
-**Why the halves are "peripheral":** in a dongle setup the dongle is the BLE
-central and both halves are peripherals. That is why the left uses the
-`_left_peripheral` shield instead of `_left`. The role is set in
-`Kconfig.defconfig` (see below), not here.
+**Who is the central:** in the 2-half setup the left half (`_left` shield) is
+the BLE central and the right half is a peripheral. The dongle and
+`_left_peripheral` entries are commented out at the bottom of `build.yaml`. In
+the dongle setup the dongle becomes the central and both halves are peripherals,
+which is why the left switches to the `_left_peripheral` shield. The role is set
+in `Kconfig.defconfig` (see below), not here.
+
+**Switching to the dongle setup:** comment out the `splitkb_aurora_sofle_left`
+entry, uncomment the dongle and `splitkb_aurora_sofle_left_peripheral` entries,
+then flash `settings_reset` to all three boards before the real firmware.
 
 ### Common build.yaml edits
-- **Rename a device as it shows over Bluetooth:** change the `\"AuroraDongle\"`
-  string. Only the central (dongle) advertises a name, so that is the only one
-  that needs it. Do not put spaces in the name; the workflow splits the
+- **Rename a device as it shows over Bluetooth:** add
+  `-DCONFIG_ZMK_KEYBOARD_NAME=\"MyName\"` to the central's `cmake-args` (the left
+  half now, the dongle later; the dongle entry uses `\"AuroraDongle\"`). Only the
+  central advertises a name. Without it the name is "Aurora Sofle". Do not put spaces in the name; the workflow splits the
   argument on whitespace and the build fails.
 - **Turn on USB debug logging** for a target: add `-DCONFIG_ZMK_USB_LOGGING=y` to
   its `cmake-args` (temporary; remove when done).
@@ -78,7 +85,8 @@ Lists what to download before building.
 - `zmk` at revision `v0.3.0`: the firmware itself. This version must match the
   `@v0.3.0` pinned in `.github/workflows/build.yml`.
 - `zmk-dongle-display` at `v0.3` (from englmaxi): provides the `dongle_display`
-  shield and the 128x64 dongle status screen.
+  shield and the 128x64 dongle status screen. Only used by the dongle setup; it
+  is downloaded but unused in the 2-half setup.
 
 To add a module later (for example a Cirque trackpad driver or a widget), add a
 `remote` (the GitHub org) and a `project` (the repo + revision) here, then
@@ -87,9 +95,9 @@ double check versions line up with your ZMK version.
 
 ## config/splitkb_aurora_sofle.keymap (your layout)
 
-This one file is shared by all three keyboard firmwares. ZMK matches it to every
-`splitkb_aurora_sofle*` shield by name, so the halves and dongle all use the same
-layers.
+This one file is shared by every keyboard firmware. ZMK matches it to every
+`splitkb_aurora_sofle*` shield by name, so the halves (and the dongle later) all
+use the same layers. Only the central's copy decides what keys do.
 
 ### Structure
 
@@ -128,13 +136,20 @@ awk '/bindings = </{c=0;g=1;next} g&&/>;/{print n": "c;g=0} g{for(i=1;i<=NF;i++)
 ```
 
 ### How the layers here are wired
-- **BASE (0):** QWERTY. Left inner thumb `&mo SEL` opens the selector while held.
-  Right inner thumb `&mo L2` opens L2 while held.
-- **SEL (1):** number row is `&tog SEL .. &tog L6`. `&tog N` flips a layer on and
-  leaves it on until pressed again. Home row selects Bluetooth profiles, and
-  there are F-keys and a few RGB controls.
-- **L2-L6 (2-6):** all `&trans` (transparent = "fall through to the layer
-  below"), except `&to BASE` top-left to jump home. Fill these in.
+- **BASE (0):** QWERTY. Number row is tap dances (tap = digit, double tap =
+  shifted symbol); Shift + Backspace sends Delete. Thumbs, outer to inner:
+  left `GUI ALT &mo L6 &lt L4 SPACE &lt L2 RET`, right
+  `&lt L3 RET &lt L5 SPACE &mo SEL RALT RGUI`.
+- **SEL (1):** held from the right thumb. Number row is `&tog SEL .. &tog L6`.
+  `&tog N` flips a layer on and leaves it on until pressed again. Home row
+  selects Bluetooth profiles, and there are F-keys and a few RGB controls.
+- **L2 (2):** navigation. ESDF arrows, Insert/Home/End/Page Up/Page Down.
+- **L3 (3):** numpad on the right, right-hand letters mirrored to the left.
+- **L4 (4):** F-keys across the number row.
+- **L5 (5):** left-hand letters mirrored to the right.
+- **L6 (6):** macros and editor shortcuts on the left hand.
+
+Every non-base layer has `&to BASE` top-left to jump home.
 
 ### Behaviors you will use most
 - `&kp KEY` tap a key. Names live in the included `keys.h` (for example `&kp A`,
@@ -162,17 +177,16 @@ the one that fires. Example to make it scroll instead of volume on a layer:
 
 ## config/splitkb_aurora_sofle.conf (feature switches)
 
-Kconfig flags, one per line, `CONFIG_...=y` (on) or `=n` (off). Shared by all
-three firmwares. The important ones here:
+Kconfig flags, one per line, `CONFIG_...=y` (on) or `=n` (off). Shared by every
+keyboard firmware. The important ones here:
 - `CONFIG_ZMK_DISPLAY=y` turn the OLEDs on.
 - (no `..._STATUS_SCREEN_CUSTOM`) so the halves use ZMK's built-in status screen,
-  which fits the 128x32 OLEDs. The dongle's 128x64 custom screen is supplied by
-  the `dongle_display` module instead.
+  which fits the 128x32 OLEDs. In the dongle setup the dongle's 128x64 custom
+  screen is supplied by the `dongle_display` module instead.
 - `CONFIG_ZMK_RGB_UNDERGLOW=y` + the `..._RGB_UNDERGLOW_*` lines: underglow on,
   plus its default effect/brightness/hue.
 - `CONFIG_ZMK_SLEEP=y` deep sleep to save battery.
 - `CONFIG_ZMK_STUDIO=y` allow live keymap editing via ZMK Studio.
-- `CONFIG_ZMK_MOUSE=y` mouse-key emulation (also the base for a future trackpad).
 - `CONFIG_EC11=y` encoder support.
 - `CONFIG_BT_CTLR_TX_PWR_PLUS_8=y` stronger Bluetooth transmit power.
 
@@ -180,7 +194,7 @@ Lines starting with `#` are off/notes. To flip a feature, uncomment or add the
 line. A `_START/_START` value like `CONFIG_ZMK_RGB_UNDERGLOW_BRT_START=15` is the
 default brightness at boot (percent).
 
-The dongle also has its own extra conf,
+The dongle (later) has its own extra conf,
 `boards/shields/splitkb_aurora_sofle/splitkb_aurora_sofle_dongle_pro_micro.conf`,
 which sets central-specific things (peripheral count, more BLE connection slots,
 its display). Half-only vs dongle-only settings belong there, shared settings
@@ -198,11 +212,11 @@ You touch this only for physical changes. What each file is:
   transform, the two encoders (both `disabled` by default), and the **128x32
   OLED** on the halves. Change the OLED `width`/`height`/`multiplex-ratio` here if
   you ever swap the half screens.
-- `splitkb_aurora_sofle_left.overlay`: left half as a standalone central (no
-  dongle). Defines the left key matrix pins and enables `&left_encoder`.
-- `splitkb_aurora_sofle_left_peripheral.overlay`: left half as a peripheral (what
-  you build). Same pins; the left encoder enable was removed because you do not
-  have a left encoder.
+- `splitkb_aurora_sofle_left.overlay`: left half as the central (what you build
+  now). Defines the left key matrix pins. The left encoder is not enabled because
+  you do not have one.
+- `splitkb_aurora_sofle_left_peripheral.overlay`: left half as a peripheral, for
+  the dongle setup. Same pins, and holds the commented Cirque trackpad template.
 - `splitkb_aurora_sofle_right.overlay`: right half pins, enables `&right_encoder`,
   and shifts its columns with `col-offset = <6>` so both halves map into one
   matrix.
@@ -213,7 +227,8 @@ You touch this only for physical changes. What each file is:
 - `splitkb_aurora_sofle.zmk.yml`: metadata listing the shield and its siblings.
 
 ### Recipe: add the left encoder later
-1. In `splitkb_aurora_sofle_left_peripheral.overlay`, add back at the end:
+1. In the left overlay you build (`splitkb_aurora_sofle_left.overlay` now,
+   `splitkb_aurora_sofle_left_peripheral.overlay` in the dongle setup), add at the end:
    `&left_encoder { status = "okay"; };`
 2. The left encoder is already index 0 in `sensor-bindings`, so it will start
    working with the existing bindings.
@@ -224,8 +239,9 @@ turn it on, uncomment all three together, then rebuild and flash the half:
 1. `config/west.yml`: the `cirque-input-module` remote + project.
 2. `boards/shields/splitkb_aurora_sofle/splitkb_aurora_sofle_left_peripheral.overlay`:
    the trackpad node (I2C Option A or SPI Option B) and the `zmk,input-listener`.
-   If your trackpad is on the right half, move that block into
-   `splitkb_aurora_sofle_right.overlay` instead.
+   That overlay is only built in the dongle setup. In the 2-half setup, copy
+   the block into `splitkb_aurora_sofle_left.overlay` instead. If your trackpad
+   is on the right half, move it into `splitkb_aurora_sofle_right.overlay`.
 3. `config/splitkb_aurora_sofle.conf`: the `CONFIG_ZMK_POINTING` block.
 
 Before it will build you must replace the placeholder pins (`pro_micro N`,
@@ -242,8 +258,8 @@ Do this as its own change so you can flash and test just that half.
 2. Put a board in bootloader mode (double-tap reset). It mounts as a USB drive.
 3. Drag the matching `.uf2` onto the drive. It reboots automatically.
 4. First time or after changing BLE settings: flash `settings_reset` to each
-   half first, then flash the real firmware, then power all three on together to
-   pair.
+   board first, then flash the real firmware, then power them on together to
+   pair (both halves now, all three boards in the dongle setup).
 
 ## Gotchas
 

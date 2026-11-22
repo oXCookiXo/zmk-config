@@ -9,9 +9,9 @@ does and step-by-step recipes for common changes.
 
 ## Hardware
 
-- **Left half**: nice!nano v2, BLE central, 128x32 OLED, one EC11 encoder
+- **Left half**: nice!nano v2, BLE central, 128x32 OLED
 - **Right half**: nice!nano v2, peripheral, 128x32 OLED, one EC11 encoder
-- RGB underglow, ZMK Studio, and mouse emulation enabled
+- RGB underglow and ZMK Studio enabled
 
 ## Build
 
@@ -41,10 +41,18 @@ connects through the dongle.
 
 Seven layers, defined in [`config/splitkb_aurora_sofle.keymap`](config/splitkb_aurora_sofle.keymap):
 
-- **BASE** (0): QWERTY
-- **SEL** (1): held from the left inner thumb; its number row toggles any layer
-  on or off, home row selects BT profiles
-- **L2 - L6** (2-6): toggle-layer placeholders, currently transparent
+- **BASE** (0): QWERTY. Number row taps a digit and double-taps its shifted
+  symbol; Shift + Backspace sends Delete
+- **SEL** (1): held from the right thumb; its number row toggles L2 - L6 on or
+  off, plus F1 - F12, BT profiles on the home row, and RGB controls
+- **L2** (2): navigation, held from the left inner thumb (tap for Enter). ESDF
+  arrows, Insert/Home/End/Page Up/Page Down on the right hand
+- **L3** (3): numpad on the right hand and right-hand letters mirrored to the
+  left, held from the right inner thumb (tap for Enter)
+- **L4** (4): F-keys across the number row, held from the left thumb (tap for Space)
+- **L5** (5): left-hand letters mirrored to the right, held from the right thumb
+  (tap for Space)
+- **L6** (6): macros and editor shortcuts on the left hand, held from the left thumb
 
 Every non-base layer has `&to BASE` on its top-left key to jump back home.
 
