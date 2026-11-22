@@ -1,22 +1,20 @@
-# GitHub Actions build matrix for the splitkb.com Aurora Sofle (dongle setup).
+# GitHub Actions build matrix for the splitkb.com Aurora Sofle (2-half setup).
 #
 # Layout:
-#   - Dongle (nice_nano_v2) is the BLE central and drives the 128x64 OLED.
-#   - Both halves are peripherals, each with its own 128x32 OLED.
+#   - Left half (nice_nano_v2) is the BLE central, 128x32 OLED + encoder.
+#   - Right half is the peripheral, 128x32 OLED + encoder.
 #   - settings_reset clears bonds when re-pairing.
+#
+# For the 3-controller dongle setup later: comment out the left entry and
+# uncomment the dongle + left_peripheral entries below.
 ---
 include:
-  # Dongle / central - nice_nano_v2 + 128x64 OLED
+  # Left half - central + 128x32 OLED + encoder
   - board: nice_nano_v2
-    shield: splitkb_aurora_sofle_dongle_pro_micro dongle_display
-    cmake-args: -DCONFIG_ZMK_KEYBOARD_NAME=\"AuroraDongle\" -DCONFIG_ZMK_STUDIO=y
-    artifact-name: aurora_sofle_dongle
-    snippet: studio-rpc-usb-uart
-
-  # Left half - peripheral + 128x32 OLED
-  - board: nice_nano_v2
-    shield: splitkb_aurora_sofle_left_peripheral
+    shield: splitkb_aurora_sofle_left
+    cmake-args: -DCONFIG_ZMK_STUDIO=y
     artifact-name: aurora_sofle_left
+    snippet: studio-rpc-usb-uart
 
   # Right half - peripheral + 128x32 OLED + encoder
   - board: nice_nano_v2
@@ -27,3 +25,16 @@ include:
   - board: nice_nano_v2
     shield: settings_reset
     artifact-name: aurora_sofle_settings_reset
+
+  # ---- Dongle setup (3 controllers) ----
+  # Dongle / central - nice_nano_v2 + 128x64 OLED
+  # - board: nice_nano_v2
+  #   shield: splitkb_aurora_sofle_dongle_pro_micro dongle_display
+  #   cmake-args: -DCONFIG_ZMK_KEYBOARD_NAME=\"AuroraDongle\" -DCONFIG_ZMK_STUDIO=y
+  #   artifact-name: aurora_sofle_dongle
+  #   snippet: studio-rpc-usb-uart
+
+  # Left half - peripheral + 128x32 OLED
+  # - board: nice_nano_v2
+  #   shield: splitkb_aurora_sofle_left_peripheral
+  #   artifact-name: aurora_sofle_left_peripheral
