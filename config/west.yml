@@ -5,6 +5,9 @@ manifest:
     # dongle_display shield (128x64 dongle status screen)
     - name: englmaxi
       url-base: https://github.com/englmaxi
+    # nice_oled shield (portrait status screen for the vertical 128x32 OLEDs)
+    - name: mctechnology17
+      url-base: https://github.com/mctechnology17
     # Cirque trackpad driver - uncomment with the project + overlay to enable
     # - name: petejohanson
     #   url-base: https://github.com/petejohanson
@@ -17,6 +20,10 @@ manifest:
     - name: zmk-dongle-display
       remote: englmaxi
       revision: v0.3
+    # nice_oled
+    - name: zmk-nice-oled
+      remote: mctechnology17
+      revision: 84a98807fd97f8930859d1eb633966aaec17b72a
     # Cirque Pinnacle trackpad input driver (see the overlay + conf blocks)
     # - name: cirque-input-module
     #   remote: petejohanson
